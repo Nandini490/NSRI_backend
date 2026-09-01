@@ -262,6 +262,70 @@ def test_calculate_external_stress_score_no_data():
     print("  PASSED")
 
 
+@patch('httpx.Client')
+def test_get_alert_stress_success(mock_client_class):
+    """Test get_alert_stress with a mocked API response."""
+    print("\n--- Test: Get alert stress - mocked API ---")
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.json.return_value = {
+        "articles": [{"title": "Emergency", "description": "Alert"}]
+    }
+    mock_client.__enter__.return_value.get.return_value = mock_response
+    mock_client_class.return_value = mock_client
+    
+    service = ExternalFactorService()
+    service.news_api_key = "test_key"
+    stress = service.get_alert_stress()
+    
+    print(f"  Got stress score: {stress}")
+    assert stress is not None
+    print("  PASSED")
+
+
+@patch('httpx.Client')
+def test_get_disaster_stress_success(mock_client_class):
+    """Test get_disaster_stress with a mocked API response."""
+    print("\n--- Test: Get disaster stress - mocked API ---")
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.text = "<rss><channel><item><title>Earthquake</title></item></channel></rss>"
+    mock_client.__enter__.return_value.get.return_value = mock_response
+    mock_client_class.return_value = mock_client
+    
+    service = ExternalFactorService()
+    service.disaster_api_key = "test_key"
+    stress = service.get_disaster_stress(40.7128, -74.0060)
+    
+    print(f"  Got stress score: {stress}")
+    assert stress is not None
+    print("  PASSED")
+
+
+@patch('httpx.Client')
+def test_get_weather_stress_zero_coords(mock_client_class):
+    """Test getting weather stress works with zero coordinates (e.g. 0.0, 0.0)."""
+    print("\n--- Test: Get weather stress - zero coords ---")
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.json.return_value = {
+        "main": {"temp": 25},
+        "weather": [{"main": "Clouds"}],
+        "wind": {"speed": 8}
+    }
+    mock_client.__enter__.return_value.get.return_value = mock_response
+    mock_client_class.return_value = mock_client
+    
+    service = ExternalFactorService()
+    service.weather_api_key = "test_key"
+    
+    stress = service.get_weather_stress(0.0, 0.0)
+    
+    print(f"  Got stress score: {stress}")
+    assert stress is not None
+    print("  PASSED")
+
+
 if __name__ == "__main__":
     print("=" * 50)
     print("  External Factor Service Tests")
@@ -282,6 +346,10 @@ if __name__ == "__main__":
     
     test_get_weather_stress_success()
     test_get_aqi_stress_failure()
+    
+    test_get_alert_stress_success()
+    test_get_disaster_stress_success()
+    test_get_weather_stress_zero_coords()
     
     test_calculate_external_stress_score_no_data()
 

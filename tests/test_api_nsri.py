@@ -93,6 +93,18 @@ def run_tests():
     print(f"Response: {response.json()}\n")
     assert response.status_code == 422
 
+    # 7. Invalid - missing coordinates when fetch_external_stress is True
+    print("7. Testing missing coordinates for external stress...")
+    payload = {
+        "wesad_stress_probability": 0.85,
+        "fetch_external_stress": True
+    }
+    response = client.post("/api/v1/nsri/calculate", json=payload)
+    print(f"Status Code: {response.status_code}")
+    print(f"Response: {response.json()}\n")
+    assert response.status_code == 422
+    assert "Both latitude and longitude are required" in response.json()["detail"]
+
     print("--- All NSRI API Tests Completed Successfully ---")
 
 if __name__ == "__main__":

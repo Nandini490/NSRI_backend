@@ -8,3 +8,6 @@ python-dotenv
 httpx
 pytest
 pymongo
+passlib[bcrypt]
+python-jose[cryptography]
+email-validator

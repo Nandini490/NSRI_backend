@@ -43,6 +43,13 @@ def calculate_nsri(request: NSRIRequest):
             detail="Both hrv_normalized and resting_hr_normalized are required to calculate PRI and RDT."
         )
 
+    if request.fetch_external_stress:
+        if request.latitude is None or request.longitude is None:
+            raise HTTPException(
+                status_code=422,
+                detail="Both latitude and longitude are required when fetch_external_stress is True."
+            )
+
     try:
         # Fetch external stress score if requested
         external_stress_score = request.external_stress_score

@@ -78,15 +78,15 @@ class NSRIService:
             return None
 
         # Default external stress to 0 if not provided
-        external_component = external_stress_score / 100 if external_stress_score is not None else 0.0
+        ext_stress = external_stress_score if external_stress_score is not None else 0.0
 
         rdt = (
             0.3 * (1 - hrv_normalized)
             + 0.2 * resting_hr_normalized
-            + 0.5 * external_component
-        )
+            + 0.5 * (ext_stress / 100)
+        ) * 100
 
-        return round(rdt * 100, 2)
+        return round(rdt, 2)
 
     def calculate_nsri(
         self,
@@ -117,6 +117,9 @@ class NSRIService:
             + 0.3 * (100 - pri)
             + 0.3 * rdt
         )
+
+        # Enforce strict 0-100 scale
+        nsri = max(0.0, min(100.0, nsri))
 
         return round(nsri, 2)
 

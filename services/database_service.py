@@ -9,10 +9,16 @@ predictions_collection = db["predictions"]
 nsri_collection = db["nsri_results"]
 
 
-def create_user(name: str, email: str):
+def get_user_by_email(email: str):
+    """Retrieve a user by their email address."""
+    return users_collection.find_one({"email": email})
+
+
+def create_user(name: str, email: str, password_hash: str):
     user = {
         "name": name,
         "email": email,
+        "password_hash": password_hash,
         "created_at": datetime.now(timezone.utc),
     }
 

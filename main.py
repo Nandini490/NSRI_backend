@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import predict, health, nsri
+from routes import predict, health, nsri, auth
 
 app = FastAPI(
     title="NSRI Model API",
@@ -18,6 +18,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router, prefix="/api/v1")
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(predict.router, prefix="/api/v1/predict")
 app.include_router(nsri.router, prefix="/api/v1/nsri")
 

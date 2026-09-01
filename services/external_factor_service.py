@@ -45,7 +45,7 @@ class ExternalFactorService:
         - Stress score 0-100 (None if unavailable)
         - Factors: temperature extremes, severe weather, storms, etc.
         """
-        if not self.weather_api_key or not latitude or not longitude:
+        if not self.weather_api_key or latitude is None or longitude is None:
             return None
 
         try:
@@ -84,7 +84,7 @@ class ExternalFactorService:
         - Stress score 0-100 (None if unavailable)
         - Higher AQI = higher stress
         """
-        if not self.aqi_api_key or not latitude or not longitude:
+        if not self.aqi_api_key or latitude is None or longitude is None:
             return None
 
         try:
@@ -156,7 +156,7 @@ class ExternalFactorService:
         - Stress score 0-100 (None if unavailable)
         - Based on proximity to active disasters
         """
-        if not self.disaster_api_key or not latitude or not longitude:
+        if not self.disaster_api_key or latitude is None or longitude is None:
             return None
 
         try:
