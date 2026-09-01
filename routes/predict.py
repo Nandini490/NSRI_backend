@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import Optional
 from services.model_service import model_service
+from services.database_service import save_prediction
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,11 +28,15 @@ class WESADRequest(BaseModel):
     ACC_Magnitude_Mean: float
     ACC_Magnitude_Std: float
     ACC_Magnitude_Max: float
+    user_id: Optional[str] = None
+    measurement_id: Optional[str] = None
 
 class MMASHRequest(BaseModel):
     mean_hr: float
     sdnn: float
     rmssd: float
+    user_id: Optional[str] = None
+    measurement_id: Optional[str] = None
 
 @router.post("/wesad")
 def predict_wesad(request: WESADRequest):
@@ -38,8 +44,21 @@ def predict_wesad(request: WESADRequest):
         raise HTTPException(status_code=503, detail="WESAD model not loaded")
     
     try:
-        features = request.model_dump()
+        features = request.model_dump(exclude={"user_id", "measurement_id"})
         result = model_service.predict_wesad(features)
+        
+        # Save prediction to database if both user_id and measurement_id are provided
+        if request.user_id and request.measurement_id:
+            try:
+                save_prediction(
+                    user_id=request.user_id,
+                    measurement_id=request.measurement_id,
+                    data=result
+                )
+            except Exception as e:
+                logger.error(f"Failed to save WESAD prediction to database: {e}")
+                # Continue to return the result even if saving fails
+        
         return {
             "model": "WESAD",
             "predicted_class": result["predicted_class"],
@@ -58,8 +77,21 @@ def predict_mmash(request: MMASHRequest):
         raise HTTPException(status_code=503, detail="MMASH model not loaded")
     
     try:
-        features = request.model_dump()
+        features = request.model_dump(exclude={"user_id", "measurement_id"})
         result = model_service.predict_mmash(features)
+        
+        # Save prediction to database if both user_id and measurement_id are provided
+        if request.user_id and request.measurement_id:
+            try:
+                save_prediction(
+                    user_id=request.user_id,
+                    measurement_id=request.measurement_id,
+                    data=result
+                )
+            except Exception as e:
+                logger.error(f"Failed to save MMASH prediction to database: {e}")
+                # Continue to return the result even if saving fails
+        
         return {
             "model": "MMASH",
             "predicted_class": result["predicted_class"],
